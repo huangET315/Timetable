@@ -30,9 +30,11 @@ WIP, but should be similar to chrome
 - At the right side you could see your course schedule for the whole week
 - You can drag course from the course menu to a cell. You could also use the + and - button at the top of each weekday to add or take one cell from this day
 - Enable delete mode by the bottom at the top, after enable you can remove a course from course schedule by click on them
-- Click on the Switch button to switch to the actual TIME table
-#### Time Table
-- The time table include one input box for every cell in the course schedule. The input box underneath weekdays are the **start time** of the day, and every other input box represent the **end time** of that class. If the corrsponding class is a double lesson, put a "d" after the end time
+- Every cell include one input box for time. The input box underneath weekdays are the **start time** of the day, and every other input box represent the **end time** of that class. If the corrsponding class is a double lesson, put a "d" after the end time
 
 ## CSS
 Basically every CSS used in this script has been put at the top of it, so you can change that freely if you want (by "basically" I mean full support for the draggable time table, and half support for the menu)
+
+## Version History
+### 1.1
+- Merged Course Schedule and Time Table
