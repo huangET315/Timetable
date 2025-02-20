@@ -22,7 +22,7 @@ Design for Stjohns Gramma School's Canvas homepage, but should also work on othe
 - Cool-looking config and setup menu 👍 (thanks for google chrome's default display style, didn't tested on other browsers yet)
 - Easy to use 👍 (will take some time to understand how to use)
 - Powerful timetable editor 👍 (do what ever you want to your timetable!)
-- Hell-like code management and structure 👎
+- HE**-like code management and structure 👎
 - Custom style supported for the timetable 👍 (make it larger, change color, remove border, you name it)
 
 ## How to Install
