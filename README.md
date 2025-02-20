@@ -9,6 +9,7 @@ Design for Stjohns Gramma School's Canvas homepage, but should also work on othe
   - [Microsoft Edge (WIP)](#microsoft-edge)
   - [Safari (WIP)](#safari)
 - [How to Use](#how-to-use)
+  - [Time Table](#time-table)
   - [Menu](#menu)
     - [Course Menu](#course-menu)
     - [Course Schedule](#course-schedule)
