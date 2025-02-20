@@ -62,7 +62,6 @@ class Css {
         transform: "translate(-50%, -50%)",
         backgroundColor: "white",
         display: "flex",
-        overflow: "auto",
         justifyContent: "space-between"
     };
 
@@ -86,7 +85,8 @@ class Css {
     courseScheduleTable = {
         borderCollapse: "collapse",
         maxHeight: "80%",
-        width: "80%"
+        width: "80%",
+        overflow: "auto"
     };
 
     courseScheduleCell = {
@@ -192,6 +192,7 @@ function generateCourseDragCell(course, element) {
     div.ondragstart = (ev) => {ev.dataTransfer.setData("text", `${course.courseId}@${course.index}`)};
     div.style.fontSize = "10px"
     div.style.width = "75px"
+    div.style.cursor = "grab"
 
     div.style.backgroundColor = course.color;
     if (course.whiteText) {
@@ -276,10 +277,10 @@ function saveCourseSchedule(newCS) {
     localStorage.courseSchedule = JSON.stringify(newCS)
 }
 
-function courseScheduleCellOnDrop(e) {
+function courseScheduleCellOnDrop(e, target) {
     e.preventDefault()
     let data = e.dataTransfer.getData("text").split("@")
-    let indexs = e.target.getAttribute("data-cellindex").split("@")
+    let indexs = target.getAttribute("data-cellindex").split("@")
 
     let courseSchedule = loadCourseSchedule()
     courseSchedule[indexs[0]][indexs[1]] = Number(data[1])
@@ -300,12 +301,16 @@ function updateCourseSchedule(tableEle) {
 
     let cs = loadCourseSchedule()
     let courseList = loadCourseList()
-    maxLen = Math.max(cs[0].length, cs[1].length, cs[2].length, cs[3].length, cs[4].length);
+    let timeTable= loadTimeTable()
+    let maxLen = Math.max(cs[0].length, cs[1].length, cs[2].length, cs[3].length, cs[4].length);
 
     let head = document.createElement("tr")
     let weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    let startTimes= [timeTable[0][0], timeTable[1][0], timeTable[2][0], timeTable[3][0], timeTable[4][0]]
+
     for (let i = 0; i < 5; i++) {
         let w = weekdays[i]
+        let time = startTimes[i]
         let th = document.createElement("th");
 
         let plusButton = document.createElement("button")
@@ -317,14 +322,13 @@ function updateCourseSchedule(tableEle) {
             let courseSchedule = loadCourseSchedule()
             courseSchedule[i].push(-1)
             saveCourseSchedule(courseSchedule)
-            updateCourseSchedule(tableEle)
 
             let timeTable = loadTimeTable()
             timeTable[i].push("")
             saveTimeTable(timeTable)
-            updateTimeTable(document.getElementById("timeTable"))
+
+            updateCourseSchedule(tableEle)
         })
-        
 
         let minusButton = document.createElement("button")
         minusButton.innerText = "-"
@@ -335,16 +339,30 @@ function updateCourseSchedule(tableEle) {
             let courseSchedule = loadCourseSchedule()
             courseSchedule[i].pop()
             saveCourseSchedule(courseSchedule)
-            updateCourseSchedule(tableEle)
 
             let timeTable = loadTimeTable()
             timeTable[i].pop()
             saveTimeTable(timeTable)
-            updateTimeTable(document.getElementById("timeTable"))
+
+            updateCourseSchedule(tableEle)
         })
 
         th.appendChild(br())
         th.appendChild(document.createTextNode(w))
+
+        let input = document.createElement("input")
+        input.maxLength = 14
+        input.value = time
+        input.style.width = "80%"
+        input.style.maxHeight = "15px"
+
+        input.addEventListener("change", (e) => {
+            let timeTable = loadTimeTable()
+            timeTable[i][0] = input.value
+            saveTimeTable(timeTable)
+        })
+
+        th.appendChild(input)
 
         addCss(th, css.courseScheduleCell)
         head.appendChild(th)
@@ -360,17 +378,35 @@ function updateCourseSchedule(tableEle) {
             let td = document.createElement("td")
 
             if (i <= day.length-1) {
-                td.style.backgroundColor = day[i] == -1? "" : courseList[day[i]].color
-                td.innerText = day[i] == -1? "" : courseList[day[i]].name
-                td.style.color = day[i] == -1? "" : courseList[day[i]].whiteText? "white" : "black"
+                if (day[i] != -1) {
+                    td.style.backgroundColor = courseList[day[i]].color
+                    td.innerText = courseList[day[i]].name
+                    td.style.color = courseList[day[i]].whiteText? "white" : ""
+                }
+
                 td.setAttribute("data-cellIndex", `${d}@${i}`)
                 td.setAttribute("data-backgroundColor", td.style.backgroundColor)
 
                 td.ondragover = (e) => {e.preventDefault();e.stopPropagation();}
-                td.ondrop = (e) => {courseScheduleCellOnDrop(e)}
+                td.ondrop = (e) => {courseScheduleCellOnDrop(e, td)}
 
-                td.ondragenter = (e) => {e.target.style.backgroundColor = "grey"}
-                td.ondragleave = (e) => {e.target.style.backgroundColor = e.target.getAttribute("data-backgroundColor")}
+                let dragCounte = 0;
+
+                td.ondragenter = (e) => {
+                    if (dragCounte === 0) {
+                        td.style.backgroundColor = "grey"
+                        input.style.backgroundColor = "grey"
+                    }
+                    dragCounte ++
+                }
+
+                td.ondragleave = (e) => {
+                    dragCounte -- 
+                    if (dragCounte === 0) {
+                        td.style.backgroundColor = td.getAttribute("data-backgroundColor")
+                        input.style.backgroundColor = ""
+                    }
+                }
 
                 td.addEventListener("click", (e) => {
                     if (document.getElementById("deleteMode").getAttribute("data-deleteMode") === "off") {
@@ -383,7 +419,22 @@ function updateCourseSchedule(tableEle) {
                     updateCourseSchedule(tableEle)
                 })
 
+                let input = document.createElement("input")
+                input.maxLength = 18
+                input.value = timeTable[d][i+1]
+                input.style.width = "80%"
+                input.style.height = "15px"
+
+                input.addEventListener("change", (e) => {
+                    let timeTable = loadTimeTable()
+                    timeTable[d][i+1] = input.value
+                    saveTimeTable(timeTable)
+                })
+
                 addCss(td, css.courseScheduleCell)
+                td.style.textAlign = "center"
+
+                td.appendChild(input)
             }
 
             tr.appendChild(td)
@@ -409,140 +460,6 @@ function loadTimeTable() {
 
 function saveTimeTable(newTable) {
     localStorage.timeTable = JSON.stringify(newTable)
-}
-
-function updateTimeTable(tableEle) {
-    let csTable = document.getElementById("csTable")
-
-    let courseSchedule = loadCourseSchedule()
-
-    tableEle.innerHTML = ""
-
-    let colGroup = document.createElement("colgroup")
-    let col = document.createElement("col")
-    col.span = 5
-    col.style.width = "20%"
-    colGroup.appendChild(col)
-    tableEle.appendChild(colGroup)
-
-    let timeTable = loadTimeTable()
-    maxLen = Math.max(timeTable[0].length, timeTable[1].length, timeTable[2].length, timeTable[3].length, timeTable[4].length);
-
-    let head = document.createElement("tr")
-    let startTimes = [timeTable[0][0], timeTable[1][0], timeTable[2][0], timeTable[3][0], timeTable[4][0]]
-
-    let menuBackground = document.getElementById("menuBackground")
-
-    let thRowHeight, tdRowHeight
-    let menuBackgroundDisplay = menuBackground.style.display
-    let csTableDisplay = csTable.style.display
-    let sampleThRow = csTable.querySelector("tr")
-    let sampleTdRow = csTable.querySelectorAll("tr")[1]
-    let thRowComputedStyle = window.getComputedStyle(sampleThRow)
-    let tdRowComputedStyle = window.getComputedStyle(sampleTdRow)
-    
-    menuBackground.style.display = "block"
-    csTable.style.display = "table"
-
-    thRowHeight = sampleThRow.getBoundingClientRect().height - parseFloat(thRowComputedStyle.borderTopWidth) - parseFloat(thRowComputedStyle.borderBottomWidth);
-    thRowHeight = thRowHeight + "px"
-
-    tdRowHeight = sampleTdRow.getBoundingClientRect().height - parseFloat(tdRowComputedStyle.borderTopWidth) - parseFloat(tdRowComputedStyle.borderBottomWidth);
-    tdRowHeight = tdRowHeight + "px"
-
-    menuBackground.style.display = menuBackgroundDisplay
-    csTable.style.display = csTableDisplay
-
-    for (let i = 0; i < 5; i++) {
-        let time = startTimes[i]
-        let th = document.createElement("th");
-
-        let plusButton = document.createElement("button")
-        plusButton.innerText = "+"
-        th.appendChild(plusButton)
-
-        plusButton.addEventListener("click", (e) => {
-            let courseSchedule = loadCourseSchedule()
-            courseSchedule[i].push(-1)
-            saveCourseSchedule(courseSchedule)
-            let timeTable = loadTimeTable()
-            timeTable[i].push("")
-            saveTimeTable(timeTable)
-            updateCourseSchedule(csTable)
-            updateTimeTable(tableEle)
-        })
-
-        let minusButton = document.createElement("button")
-        minusButton.innerText = "-"
-        th.appendChild(minusButton)
-
-        minusButton.addEventListener("click", (e) => {
-            let courseSchedule = loadCourseSchedule()
-            courseSchedule[i].pop()
-            saveCourseSchedule(courseSchedule)
-
-            let timeTable = loadTimeTable()
-            timeTable[i].pop()
-            saveTimeTable(timeTable)
-
-            updateCourseSchedule(csTable)
-            updateTimeTable(tableEle)
-        })
-
-        th.appendChild(br())
-        
-        let input = document.createElement("input")
-        input.maxLength = 6
-        input.value = time
-        input.style.width = "80%"
-        input.style.maxHeight = "15px"
-
-        input.addEventListener("change", (e) => {
-            let timeTable = loadTimeTable()
-            timeTable[i][0] = input.value
-            saveTimeTable(timeTable)
-        })
-
-        th.appendChild(input)
-
-        addCss(th, css.courseScheduleCell)
-        th.style.height = ""
-        head.appendChild(th)
-    }
-
-    head.height = thRowHeight
-
-    tableEle.appendChild(head)
-    
-    for (let i = 1; i <= maxLen; i++) {
-        let tr = document.createElement("tr")
-        for (let d = 0; d < timeTable.length; d++) {
-            let td = document.createElement("td")
-
-            if (courseSchedule[d][i-1] != undefined) {
-                let input = document.createElement("input")
-                input.maxLength = 6
-                input.value = timeTable[d][i]
-                input.style.width = "80%"
-                input.style.height = "15px"
-
-                input.addEventListener("change", (e) => {
-                    let timeTable = loadTimeTable()
-                    timeTable[d][i] = input.value
-                    saveTimeTable(timeTable)
-                })
-
-                addCss(td, css.courseScheduleCell)
-                td.style.textAlign = "center"
-
-                td.appendChild(input)
-            }
-
-            tr.appendChild(td)
-        }
-        tr.style.height = tdRowHeight
-        tableEle.appendChild(tr)
-    }
 }
 
 function constructMenu() {
@@ -748,40 +665,35 @@ function constructMenu() {
             deleteMode.innerText = "Delete Mode: On"
             deleteMode.style.backgroundColor = "red"
             deleteMode.style.color = "white"
+
+            document.querySelectorAll("#csTable input").forEach((input) => {
+                input.readOnly = true
+                input.style.cursor = "auto"
+            })
             return
         }
         deleteMode.setAttribute("data-deleteMode", "off")
         deleteMode.innerText = "Delete Mode: Off"
         deleteMode.style.backgroundColor = ""
         deleteMode.style.color = "black"
+
+        document.querySelectorAll("#csTable input").forEach((input) => {
+            input.readOnly = false
+        })
     });
     
-    let switchButton = document.createElement("button")
-    switchButton.innerText = "Switch Table"
-    switchButton.addEventListener("click", (e) => {
-        csTable.style.display = csTable.style.display === "none"? "table" : "none"
-        deleteMode.style.display = deleteMode.style.display === "none"? "inline-block" : "none"
-        timeTable.style.display = timeTable.style.display === "none"? "table" : "none"
-        updateCourseSchedule(csTable)
-        updateTimeTable(timeTable)
-    })
-    csTableMenu.appendChild(switchButton)
-    
     csTableMenu.appendChild(deleteMode)
+
+    let tableContainer = document.createElement("div")
+    tableContainer.style.overflow = "auto"
+    tableContainer.style.height = "80%"
+    csTableMenu.appendChild(tableContainer)
 
     let csTable = document.createElement("table");
     csTable.id = "csTable"
     addCss(csTable, css.courseScheduleTable)
-    csTableMenu.appendChild(csTable);
+    tableContainer.appendChild(csTable);
     updateCourseSchedule(csTable);
-
-
-    let timeTable = document.createElement("table");
-    timeTable.id = "timeTable";
-    timeTable.style.display = "none"
-    addCss(timeTable, css.courseScheduleTable);
-    csTableMenu.appendChild(timeTable);
-    updateTimeTable(timeTable)
 }
 
 (function(){
