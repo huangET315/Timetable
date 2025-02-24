@@ -42,6 +42,7 @@ WIP, but should be similar to Chrome
 - If it gose out of bounds for some reason, it will automatically move back to the edge 
 ### Menu
 - After installed, you should be able to see a blue icon at the top-right corner. Click on it will bring up the menu
+- The button aside can hide or show the timetable
 #### Course Menu
 - At the left side is the course menu, you can add and delete course here
 - When adding course, Nickname and Classroom will be display in the actual timetable, Color determind its background color, and having a Id will lead you to the course's mainpage when you click on that cell. A preview will be shown at the bottom when you filling informations. **All informations are not required**
@@ -56,5 +57,7 @@ WIP, but should be similar to Chrome
 Basically every CSS used in this script has been put at the top of it, so you can change that freely if you want (by "basically" I mean full support for the draggable time table, and half support for the menu)
 
 ## Version History
+### 1.2
+- Added Hide/Show button
 ### 1.1
 - Merged Course Schedule and Time Table
