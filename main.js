@@ -41,6 +41,19 @@ class Css {
         cursor: "pointer"
     };
 
+    hideButton = {
+        border: "1px solid black",
+        textAlign: "center",
+        cursor: "pointer",
+        top: "0px",
+        right: "26px",
+        fontSize: "14px",
+        position: "fixed",
+        backgroundColor: "#fffc96",
+        borderRadius: "5px",
+        height: "25px"
+    }
+
     menuBackground = {
         position: "fixed",
         top: "50%",
@@ -463,10 +476,33 @@ function saveTimeTable(newTable) {
 }
 
 function constructMenu() {
+    let header = document.getElementById("header")
+
     let menuButton = document.createElement("div");
     addCss(menuButton, css.menuButton);
     menuButton.innerText = "≡";
-    document.getElementById("header").appendChild(menuButton);
+    header.appendChild(menuButton);
+
+    let hideButton = document.createElement("div");
+    addCss(hideButton, css.hideButton)
+    hideButton.innerText = "Hide"
+    header.appendChild(hideButton)
+    hideButton.addEventListener("click", (e) => {
+        let ele = document.getElementById("timeTable")
+        if (!ele) {
+            return
+        }
+
+        if (ele.style.display == "block") {
+            ele.style.display = "none";
+            hideButton.innerText = "Show";
+            hideButton.style.backgroundColor = "#ed7979";
+        } else {
+            ele.style.display = "block";
+            hideButton.innerText = "Hide";
+            hideButton.style.backgroundColor = "#fffc96"
+        }
+    })
 
     let menuBackground = document.createElement("div");
     menuBackground.id = "menuBackground"
@@ -711,6 +747,7 @@ function constructMenu() {
     let courseList = loadCourseList()
 
     let table = document.createElement("table");
+    table.id = "timeTable"
 
     addCss(table, css.table)
 
