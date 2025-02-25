@@ -15,6 +15,7 @@ Design for Stjohns Gramma School's Canvas homepage, but should also work on othe
     - [Course Schedule](#course-schedule)
 - [CSS](#css)
 - [Version History](#version-history)
+  - [1.2](#12)
   - [1.1](#11)
 
 ## Feature
